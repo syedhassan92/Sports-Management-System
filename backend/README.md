@@ -1,234 +1,153 @@
-# Sports Management System - Backend
+# Sports Management System Backend
 
-Express.js REST API with MySQL database for managing sports leagues, tournaments, teams, and players.
+This directory contains the Express API and MySQL database integration for the
+Sports Management System.
 
-## Prerequisites
+## Stack
 
-- Node.js (v14 or higher)
-- MySQL Server (v5.7 or higher)
-- npm or yarn
+- Node.js
+- Express 5
+- MySQL, accessed through `mysql2`
+- JSON Web Tokens (JWT) for authentication
+- `bcrypt` for password hashing
+- `nodemon` for development
 
-## Setup Instructions
+## Requirements
 
-### 1. Install Dependencies
+- Node.js 18 or newer
+- npm
+- MySQL 8 or a compatible MySQL server
+
+## Installation
+
+From this directory, install the dependencies:
 
 ```bash
-cd backend
 npm install
 ```
 
-### 2. Configure Environment Variables
-
-Create a `.env` file in the backend directory (already exists) and verify the settings:
+Create a `.env` file in `backend/`:
 
 ```env
 PORT=5000
+FRONTEND_URL=http://localhost:3000
+
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=your_password
+DB_PASSWORD=
 DB_NAME=sports_management_db
-JWT_SECRET=your_jwt_secret_key_here
-FRONTEND_URL=http://localhost:3000
+
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_EXPIRE=24h
 ```
 
-### 3. Create Database
+`DB_HOST`, `DB_USER`, `DB_NAME`, and `DB_PORT` have defaults in the application,
+but setting them explicitly is recommended. Do not commit `.env` or real
+credentials.
 
-Open MySQL command line or MySQL Workbench and run:
+## Database setup
 
-```sql
-CREATE DATABASE sports_management_db;
+The complete setup script creates the `sports_management_db` database, all
+tables, triggers, relationships, and sample records:
+
+```text
+database/complete-setup.sql
 ```
 
-### 4. Run Database Schema
-
-Execute the schema file to create all tables:
+Run it with MySQL:
 
 ```bash
-mysql -u root -p sports_management_db < database/schema.sql
+mysql -u root -p < database/complete-setup.sql
 ```
 
-Or in MySQL Workbench/command line:
+The script drops and recreates `sports_management_db`, so do not run it against
+a database containing data you need to keep.
 
-```sql
-USE sports_management_db;
-SOURCE /path/to/backend/database/schema.sql;
-```
+The schema includes users and admins, leagues, tournaments, teams, coaches,
+referees, players, contracts, venues, matches, statistics, and transfers.
 
-### 5. Seed Database (Optional)
+## Running the API
 
-Populate the database with initial data:
+Development mode (restarts when files change):
 
-```bash
-mysql -u root -p sports_management_db < database/seed.sql
-```
-
-Or:
-
-```sql
-USE sports_management_db;
-SOURCE /path/to/backend/database/seed.sql;
-```
-
-### 6. Start the Server
-
-Development mode (with auto-restart):
 ```bash
 npm run dev
 ```
 
-Production mode:
+Normal start:
+
 ```bash
 npm start
 ```
 
-The server will start on `http://localhost:5000`
+The server listens on `http://localhost:5000` by default. Check that it is
+running with:
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - Login (user or admin)
-- `POST /api/auth/register` - Register new user
-
-### Leagues
-- `GET /api/leagues` - Get all leagues
-- `GET /api/leagues/:id` - Get league by ID
-- `POST /api/leagues` - Create league (admin only)
-- `PUT /api/leagues/:id` - Update league (admin only)
-- `DELETE /api/leagues/:id` - Delete league (admin only)
-
-### Tournaments
-- `GET /api/tournaments` - Get all tournaments
-- `GET /api/tournaments/:id` - Get tournament by ID
-- `POST /api/tournaments` - Create tournament (admin only)
-- `PUT /api/tournaments/:id` - Update tournament (admin only)
-- `DELETE /api/tournaments/:id` - Delete tournament (admin only)
-
-### Teams
-- `GET /api/teams` - Get all teams (with coach and league info)
-- `GET /api/teams/:id` - Get team by ID
-- `POST /api/teams` - Create team (admin only)
-- `PUT /api/teams/:id` - Update team (admin only)
-- `DELETE /api/teams/:id` - Delete team (admin only)
-
-### Players
-- `GET /api/players` - Get all players (with stats)
-- `GET /api/players/:id` - Get player by ID
-- `POST /api/players` - Create player (admin only)
-- `PUT /api/players/:id` - Update player (admin only)
-- `DELETE /api/players/:id` - Delete player (admin only)
-
-### Coaches
-- `GET /api/coaches` - Get all coaches
-- `GET /api/coaches/:id` - Get coach by ID
-- `POST /api/coaches` - Create coach (admin only)
-- `PUT /api/coaches/:id` - Update coach (admin only)
-- `DELETE /api/coaches/:id` - Delete coach (admin only)
-
-### Referees
-- `GET /api/referees` - Get all referees
-- `GET /api/referees/:id` - Get referee by ID
-- `POST /api/referees` - Create referee (admin only)
-- `PUT /api/referees/:id` - Update referee (admin only)
-- `DELETE /api/referees/:id` - Delete referee (admin only)
-
-### Venues
-- `GET /api/venues` - Get all venues
-- `GET /api/venues/:id` - Get venue by ID
-- `POST /api/venues` - Create venue (admin only)
-- `PUT /api/venues/:id` - Update venue (admin only)
-- `DELETE /api/venues/:id` - Delete venue (admin only)
-
-### Matches
-- `GET /api/matches` - Get all matches (with full relations)
-- `GET /api/matches/:id` - Get match by ID
-- `POST /api/matches` - Create match (admin only)
-- `PUT /api/matches/:id` - Update match (admin only)
-- `DELETE /api/matches/:id` - Delete match (admin only)
-
-### Transfers
-- `GET /api/transfers` - Get all transfers (with player details)
-- `POST /api/transfers` - Create transfer (admin only)
-- `DELETE /api/transfers/:id` - Delete transfer (admin only)
-
-### Statistics
-- `GET /api/stats/dashboard` - Get dashboard statistics
-- `GET /api/stats/top-players` - Get top players by rating
-- `GET /api/stats/standings/:leagueId` - Get team standings by league
-- `GET /api/stats/recent-transfers` - Get recent transfers
-
-## Authentication
-
-The API uses JWT (JSON Web Tokens) for authentication. Include the token in requests:
-
-```
-Authorization: Bearer <token>
+```text
+GET http://localhost:5000/api/health
 ```
 
-### Default Credentials
+## API route groups
 
-**Admin:**
-- Email: admin@sports.com
-- Password: admin123
+All routes are prefixed with `http://localhost:5000/api`.
 
-**User:**
-- Email: user@sports.com
-- Password: user123
+| Prefix | Purpose |
+| --- | --- |
+| `/auth` | User and admin login and registration |
+| `/teams` | Team management and team relationships |
+| `/leagues` | League management |
+| `/tournaments` | Tournament management, teams, and brackets |
+| `/players` | Player management, statistics, matches, and transfers |
+| `/coaches` | Coach management |
+| `/referees` | Referee management |
+| `/venues` | Venue management |
+| `/matches` | Match scheduling, results, lineups, and events |
+| `/transfers` | Player transfer records |
+| `/stats` | Dashboard, league, tournament, team, and player statistics |
+| `/player-contracts` | Player contract management |
 
-## Database Schema
+Management requests use the following header:
 
-The system includes 15 tables:
-1. USERACCOUNT - User authentication
-2. ADMIN - Administrator details
-3. COACH - Coach information
-4. REFEREE - Referee details
-5. LEAGUE - League management
-6. TOURNAMENT - Tournament organization
-7. TEAM - Team details
-8. TEAMSTATS - Team statistics per league
-9. TOURNAMENTTEAM - Tournament-team junction
-10. PLAYER - Player information
-11. PLAYERSTATS - Player statistics
-12. VENUE - Venue details
-13. MATCH - Match scheduling and results
-14. TRANSFER - Transfer records
-15. TRANSFERDETAILS - Transfer-player junction
-
-## Error Handling
-
-The API returns consistent error responses:
-
-```json
-{
-  "error": {
-    "message": "Error description",
-    "status": 400
-  }
-}
+```text
+Authorization: Bearer <jwt-token>
 ```
 
-## Development
+## Seed accounts
 
-- Server auto-restarts on file changes (using nodemon)
-- CORS enabled for frontend communication
-- Connection pooling for database efficiency
-- JWT authentication with role-based access control
+The sample SQL data includes these local-development accounts:
+
+| Account | Login identifier | Password | Role |
+| --- | --- | --- | --- |
+| Admin | `admin@sports.com` | `admin123` | Admin |
+| User | `user` | `user123` | User |
+
+These credentials should be changed or removed before using the application
+outside a local environment.
+
+## Project structure
+
+```text
+backend/
+├── config/
+│   └── database.js       # MySQL connection pool
+├── database/
+│   ├── complete-setup.sql
+│   ├── schema-bcnf.sql
+│   └── seed-bcnf.sql
+├── middleware/
+│   └── auth.js            # JWT and admin authorization
+├── routes/                # Express route modules
+├── scripts/
+│   └── resetDatabase.js
+├── server.js              # Express application entry point
+└── package.json
+```
 
 ## Troubleshooting
 
-**Cannot connect to database:**
-- Verify MySQL is running
-- Check DB credentials in `.env`
-- Ensure database exists
-
-**Port already in use:**
-- Change PORT in `.env` file
-- Or stop the process using port 5000
-
-**Authentication errors:**
-- Verify JWT_SECRET is set in `.env`
-- Check token is being sent in Authorization header
-
-## License
-
-ISC
+- Verify that MySQL is running and `.env` matches the local installation if
+  the API reports a database connection failure.
+- Set `FRONTEND_URL` to the React development-server URL if CORS rejects the
+  frontend.
+- Change `PORT` or stop the process using port `5000` if the port is occupied.
